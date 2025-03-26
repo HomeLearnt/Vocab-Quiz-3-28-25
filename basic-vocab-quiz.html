@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vocabulary Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .card {
+            display: none;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        .active {
+            display: block;
+        }
+        .word {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .definition, .example {
+            margin-bottom: 15px;
+        }
+        .question {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .option {
+            padding: 8px;
+            margin: 5px 0;
+            background-color: #f1f1f1;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .option:hover {
+            background-color: #e0e0e0;
+        }
+        .feedback {
+            margin-top: 10px;
+            padding: 8px;
+            border-radius: 4px;
+            display: none;
+        }
+        .correct {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .nav-button {
+            padding: 8px 16px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .nav-button:disabled {
+            background-color: #cccccc;
+        }
+        .score {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        .progress {
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Text Features Vocabulary Quiz</h1>
+        
+        <div class="score">
+            Score: <span id="score">0</span> out of <span id="total">10</span>
+        </div>
+        
+        <div id="card-container">
+            <!-- Cards will be created dynamically -->
+        </div>
+        
+        <div class="navigation">
+            <button class="nav-button" id="prev-btn" onclick="prevCard()">Previous</button>
+            <button class="nav-button" id="next-btn" onclick="nextCard()">Next</button>
+        </div>
+        
+        <div class="progress">
+            Word <span id="current">1</span> of <span id="total-words">10</span>
+        </div>
+    </div>
+
+    <script>
+        // Vocabulary data
+        const vocabWords = [
+            {
+                word: "QUOTATION",
+                definition: "A sentence or phrase in a text",
+                example: "The book included this quotation from the author: \"Reading takes you on amazing adventures!\"",
+                question: "What is a quotation?",
+                options: [
+                    { text: "A picture in a book", correct: false },
+                    { text: "Words taken directly from a text", correct: true },
+                    { text: "A link to a website", correct: false },
+                    { text: "The name of a book part", correct: false }
+                ]
+            },
+            {
+                word: "CAPTION",
+                definition: "Describes the illustration or photograph",
+                example: "The caption under the dinosaur picture told us it was a Tyrannosaurus Rex.",
+                question: "Where would you find a caption?",
+                options: [
+                    { text: "At the beginning of a chapter", correct: false },
+                    { text: "In the table of contents", correct: false },
+                    { text: "Next to or under a picture", correct: true },
+                    { text: "At the end of a book", correct: false }
+                ]
+            },
+            {
+                word: "HYPERLINK",
+                definition: "Takes you to a website",
+                example: "When I clicked the blue hyperlink, it took me to a video about planets.",
+                question: "What happens when you click a hyperlink?",
+                options: [
+                    { text: "It shows you a glossary", correct: false },
+                    { text: "It takes you to a different webpage", correct: true },
+                    { text: "It plays music", correct: false },
+                    { text: "It prints the page", correct: false }
+                ]
+            },
+            {
+                word: "PHOTOGRAPH",
+                definition: "Captures a real-life image with a camera",
+                example: "The photograph of the mountain showed exactly how tall it was.",
+                question: "How is a photograph different from a drawing?",
+                options: [
+                    { text: "It's always in black and white", correct: false },
+                    { text: "It's a real image captured with a camera", correct: true },
+                    { text: "It's always smaller", correct: false },
+                    { text: "It never has people in it", correct: false }
+                ]
+            },
+            {
+                word: "LABEL",
+                definition: "Names parts of a diagram",
+                example: "The labels on the plant diagram helped us learn the names of each part.",
+                question: "What is the purpose of a label?",
+                options: [
+                    { text: "To name parts of a diagram or picture", correct: true },
+                    { text: "To tell when a book was published", correct: false },
+                    { text: "To separate chapters", correct: false },
+                    { text: "To list important words", correct: false }
+                ]
+            },
+            {
+                word: "HEADING",
+                definition: "Separates the passage into sections",
+                example: "The heading \"Dinosaur Diet\" helped me find information about what dinosaurs ate.",
+                question: "Where would you find a heading?",
+                options: [
+                    { text: "Under a picture", correct: false },
+                    { text: "At the top of a section", correct: true },
+                    { text: "At the bottom of a page", correct: false },
+                    { text: "In the index", correct: false }
+                ]
+            },
+            {
+                word: "SIDEBAR",
+                definition: "Gives extra information about the topic",
+                example: "I learned a fun fact about sharks from the sidebar next to the ocean chapter.",
+                question: "What information would you find in a sidebar?",
+                options: [
+                    { text: "The author's name", correct: false },
+                    { text: "The page number", correct: false },
+                    { text: "Extra information about the topic", correct: true },
+                    { text: "The book title", correct: false }
+                ]
+            },
+            {
+                word: "GLOSSARY",
+                definition: "Defines important words",
+                example: "When I didn't know what \"habitat\" meant, I looked it up in the glossary.",
+                question: "Where is the glossary usually found?",
+                options: [
+                    { text: "At the beginning of a book", correct: false },
+                    { text: "In the middle of a chapter", correct: false },
+                    { text: "At the end of a book", correct: true },
+                    { text: "On the cover", correct: false }
+                ]
+            },
+            {
+                word: "PHRASE",
+                definition: "A group of words that express an idea",
+                example: "The phrase \"once upon a time\" tells us we're reading a fairy tale.",
+                question: "Which of these is a phrase?",
+                options: [
+                    { text: "The dog barked loudly.", correct: false },
+                    { text: "Under the table", correct: true },
+                    { text: "She runs fast.", correct: false },
+                    { text: "Today is sunny.", correct: false }
+                ]
+            },
+            {
+                word: "SECTION",
+                definition: "A group of paragraphs in a text that have the same main idea",
+                example: "The section about dolphins told us all about where they live and what they eat.",
+                question: "How can you tell where a new section begins?",
+                options: [
+                    { text: "It has a different color page", correct: false },
+                    { text: "It often has a new heading", correct: true },
+                    { text: "It always starts with \"Once upon a time\"", correct: false },
+                    { text: "It's always exactly one page long", correct: false }
+                ]
+            }
+        ];
+
+        let currentIndex = 0;
+        let score = 0;
+        let answered = Array(vocabWords.length).fill(false);
+
+        // Create all cards
+        function createCards() {
+            const container = document.getElementById('card-container');
+            
+            vocabWords.forEach((word, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.id = `card-${index}`;
+                
+                // Word
+                const wordEl = document.createElement('div');
+                wordEl.className = 'word';
+                wordEl.textContent = word.word;
+                card.appendChild(wordEl);
+                
+                // Definition
+                const defEl = document.createElement('div');
+                defEl.className = 'definition';
+                defEl.textContent = `Definition: ${word.definition}`;
+                card.appendChild(defEl);
+                
+                // Example
+                const exampleEl = document.createElement('div');
+                exampleEl.className = 'example';
+                exampleEl.textContent = `Example: ${word.example}`;
+                card.appendChild(exampleEl);
+                
+                // Question
+                const questionEl = document.createElement('div');
+                questionEl.className = 'question';
+                questionEl.textContent = word.question;
+                card.appendChild(questionEl);
+                
+                // Options
+                word.options.forEach((option, optIndex) => {
+                    const optionEl = document.createElement('div');
+                    optionEl.className = 'option';
+                    optionEl.textContent = option.text;
+                    optionEl.onclick = function() {
+                        if (!answered[index]) {
+                            checkAnswer(index, option.correct, optIndex);
+                        }
+                    };
+                    card.appendChild(optionEl);
+                });
+                
+                // Feedback
+                const feedbackEl = document.createElement('div');
+                feedbackEl.className = 'feedback';
+                feedbackEl.id = `feedback-${index}`;
+                card.appendChild(feedbackEl);
+                
+                container.appendChild(card);
+            });
+            
+            // Show the first card
+            document.getElementById('card-0').classList.add('active');
+            document.getElementById('total-words').textContent = vocabWords.length;
+            updateButtons();
+        }
+
+        // Check an answer
+        function checkAnswer(cardIndex, isCorrect, optionIndex) {
+            if (answered[cardIndex]) return;
+            
+            answered[cardIndex] = true;
+            
+            const card = document.getElementById(`card-${cardIndex}`);
+            const options = card.querySelectorAll('.option');
+            const feedback = document.getElementById(`feedback-${cardIndex}`);
+            
+            // Highlight correct answer
+            options.forEach((option, i) => {
+                if (vocabWords[cardIndex].options[i].correct) {
+                    option.style.backgroundColor = '#d4edda';
+                }
+            });
+            
+            // Show feedback
+            if (isCorrect) {
+                feedback.textContent = 'Correct! Great job!';
+                feedback.className = 'feedback correct';
+                score++;
+                document.getElementById('score').textContent = score;
+            } else {
+                feedback.textContent = 'Not quite. Try to remember the definition!';
+                feedback.className = 'feedback incorrect';
+            }
+            
+            feedback.style.display = 'block';
+            updateButtons();
+        }
+
+        // Navigation functions
+        function nextCard() {
+            if (currentIndex < vocabWords.length - 1) {
+                document.getElementById(`card-${currentIndex}`).classList.remove('active');
+                currentIndex++;
+                document.getElementById(`card-${currentIndex}`).classList.add('active');
+                document.getElementById('current').textContent = currentIndex + 1;
+                updateButtons();
+            }
+        }
+
+        function prevCard() {
+            if (currentIndex > 0) {
+                document.getElementById(`card-${currentIndex}`).classList.remove('active');
+                currentIndex--;
+                document.getElementById(`card-${currentIndex}`).classList.add('active');
+                document.getElementById('current').textContent = currentIndex + 1;
+                updateButtons();
+            }
+        }
+
+        // Update button states
+        function updateButtons() {
+            document.getElementById('prev-btn').disabled = (currentIndex === 0);
+            document.getElementById('next-btn').disabled = (currentIndex === vocabWords.length - 1);
+        }
+
+        // Initialize on page load
+        window.onload = function() {
+            createCards();
+        };
+    </script>
+</body>
+</html>
