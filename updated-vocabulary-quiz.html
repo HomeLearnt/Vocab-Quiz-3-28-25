@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vocabulary Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .card {
+            display: none;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        .active {
+            display: block;
+        }
+        .word {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .definition, .example {
+            margin-bottom: 15px;
+        }
+        .question {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .option {
+            padding: 8px;
+            margin: 5px 0;
+            background-color: #f1f1f1;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .option:hover {
+            background-color: #e0e0e0;
+        }
+        .feedback {
+            margin-top: 10px;
+            padding: 8px;
+            border-radius: 4px;
+            display: none;
+        }
+        .correct {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .nav-button {
+            padding: 8px 16px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .nav-button:disabled {
+            background-color: #cccccc;
+        }
+        .score {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        .progress {
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Vocabulary Quiz Week of 4/1/25</h1>
+        
+        <div class="score">
+            Score: <span id="score">0</span> out of <span id="total">10</span>
+        </div>
+        
+        <div id="card-container">
+            <!-- Cards will be created dynamically -->
+        </div>
+        
+        <div class="navigation">
+            <button class="nav-button" id="prev-btn" onclick="prevCard()">Previous</button>
+            <button class="nav-button" id="next-btn" onclick="nextCard()">Next</button>
+        </div>
+        
+        <div class="progress">
+            Word <span id="current">1</span> of <span id="total-words">10</span>
+        </div>
+    </div>
+
+    <script>
+        // Vocabulary data
+        const vocabWords = [
+            {
+                word: "CURIOUS",
+                definition: "Interested; eager to learn",
+                example: "My curious brother always asks questions about how things work.",
+                question: "What does it mean to be curious?",
+                options: [
+                    { text: "To be tired all the time", correct: false },
+                    { text: "To be interested and want to learn more", correct: true },
+                    { text: "To be afraid of new things", correct: false },
+                    { text: "To be upset about something", correct: false }
+                ]
+            },
+            {
+                word: "CURIOSITY",
+                definition: "Desire to know \"why\" something happens",
+                example: "Her curiosity about space led her to read many books about planets and stars.",
+                question: "What is an example of curiosity?",
+                options: [
+                    { text: "Sleeping through a science lesson", correct: false },
+                    { text: "Watching TV without asking any questions", correct: false },
+                    { text: "Asking why the sky is blue", correct: true },
+                    { text: "Avoiding new experiences", correct: false }
+                ]
+            },
+            {
+                word: "HONOR",
+                definition: "Respect",
+                example: "We showed honor to our town's veterans by standing as they walked by in the parade.",
+                question: "What does honor mean?",
+                options: [
+                    { text: "To make something look nice", correct: false },
+                    { text: "To show respect", correct: true },
+                    { text: "To hide something", correct: false },
+                    { text: "To break a promise", correct: false }
+                ]
+            },
+            {
+                word: "HONORABLE",
+                definition: "Worthy of respect",
+                example: "The honorable judge was known for always being fair and honest.",
+                question: "Who would be described as honorable?",
+                options: [
+                    { text: "Someone who helps others and keeps their promises", correct: true },
+                    { text: "Someone who takes things that don't belong to them", correct: false },
+                    { text: "Someone who is always late", correct: false },
+                    { text: "Someone who never shares with others", correct: false }
+                ]
+            },
+            {
+                word: "AGGRESSIVE",
+                definition: "Forceful energy or initiative",
+                example: "The aggressive basketball player always tried to take the ball and score points.",
+                question: "What does aggressive mean?",
+                options: [
+                    { text: "Very shy and quiet", correct: false },
+                    { text: "Always sleeping or resting", correct: false },
+                    { text: "Having forceful energy or being pushy", correct: true },
+                    { text: "Being very patient", correct: false }
+                ]
+            },
+            {
+                word: "AGGRESSOR",
+                definition: "Somebody or something with aggression",
+                example: "In the wildlife documentary, the lion was the aggressor when hunting for food.",
+                question: "Who would be called an aggressor?",
+                options: [
+                    { text: "A person who always lets others go first", correct: false },
+                    { text: "A person who avoids all conflicts", correct: false },
+                    { text: "A person who starts arguments or fights", correct: true },
+                    { text: "A person who is always helping others", correct: false }
+                ]
+            },
+            {
+                word: "AGGRESSION",
+                definition: "Forceful action",
+                example: "The dog showed aggression by barking loudly and showing its teeth.",
+                question: "What is an example of aggression?",
+                options: [
+                    { text: "Reading quietly in the library", correct: false },
+                    { text: "Pushing to the front of the line", correct: true },
+                    { text: "Helping someone with homework", correct: false },
+                    { text: "Sleeping during a movie", correct: false }
+                ]
+            },
+            {
+                word: "CREATOR",
+                definition: "Somebody that creates or produces something",
+                example: "The creator of the comic book came up with all the characters and stories.",
+                question: "Who is a creator?",
+                options: [
+                    { text: "Someone who invents or makes new things", correct: true },
+                    { text: "Someone who only copies others' ideas", correct: false },
+                    { text: "Someone who breaks things", correct: false },
+                    { text: "Someone who never finishes projects", correct: false }
+                ]
+            },
+            {
+                word: "CREATIVE",
+                definition: "Using your imagination to create ideas",
+                example: "My creative sister designed a beautiful birthday card with glitter and drawings.",
+                question: "What does it mean to be creative?",
+                options: [
+                    { text: "To follow instructions exactly", correct: false },
+                    { text: "To only copy what others do", correct: false },
+                    { text: "To use your imagination to make something new", correct: true },
+                    { text: "To avoid trying new things", correct: false }
+                ]
+            },
+            {
+                word: "CREATION",
+                definition: "Making something",
+                example: "The creation of his science project took several days of hard work.",
+                question: "What is a creation?",
+                options: [
+                    { text: "Something that has been made or produced", correct: true },
+                    { text: "A type of food", correct: false },
+                    { text: "A place to visit", correct: false },
+                    { text: "A time of day", correct: false }
+                ]
+            }
+        ];
+
+        let currentIndex = 0;
+        let score = 0;
+        let answered = Array(vocabWords.length).fill(false);
+
+        // Create all cards
+        function createCards() {
+            const container = document.getElementById('card-container');
+            
+            vocabWords.forEach((word, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.id = `card-${index}`;
+                
+                // Word
+                const wordEl = document.createElement('div');
+                wordEl.className = 'word';
+                wordEl.textContent = word.word;
+                card.appendChild(wordEl);
+                
+                // Definition
+                const defEl = document.createElement('div');
+                defEl.className = 'definition';
+                defEl.textContent = `Definition: ${word.definition}`;
+                card.appendChild(defEl);
+                
+                // Example
+                const exampleEl = document.createElement('div');
+                exampleEl.className = 'example';
+                exampleEl.textContent = `Example: ${word.example}`;
+                card.appendChild(exampleEl);
+                
+                // Question
+                const questionEl = document.createElement('div');
+                questionEl.className = 'question';
+                questionEl.textContent = word.question;
+                card.appendChild(questionEl);
+                
+                // Options
+                word.options.forEach((option, optIndex) => {
+                    const optionEl = document.createElement('div');
+                    optionEl.className = 'option';
+                    optionEl.textContent = option.text;
+                    optionEl.onclick = function() {
+                        if (!answered[index]) {
+                            checkAnswer(index, option.correct, optIndex);
+                        }
+                    };
+                    card.appendChild(optionEl);
+                });
+                
+                // Feedback
+                const feedbackEl = document.createElement('div');
+                feedbackEl.className = 'feedback';
+                feedbackEl.id = `feedback-${index}`;
+                card.appendChild(feedbackEl);
+                
+                container.appendChild(card);
+            });
+            
+            // Show the first card
+            document.getElementById('card-0').classList.add('active');
+            document.getElementById('total-words').textContent = vocabWords.length;
+            updateButtons();
+        }
+
+        // Check an answer
+        function checkAnswer(cardIndex, isCorrect, optionIndex) {
+            if (answered[cardIndex]) return;
+            
+            answered[cardIndex] = true;
+            
+            const card = document.getElementById(`card-${cardIndex}`);
+            const options = card.querySelectorAll('.option');
+            const feedback = document.getElementById(`feedback-${cardIndex}`);
+            
+            // Highlight correct answer
+            options.forEach((option, i) => {
+                if (vocabWords[cardIndex].options[i].correct) {
+                    option.style.backgroundColor = '#d4edda';
+                }
+            });
+            
+            // Show feedback
+            if (isCorrect) {
+                feedback.textContent = 'Correct! Great job!';
+                feedback.className = 'feedback correct';
+                score++;
+                document.getElementById('score').textContent = score;
+            } else {
+                feedback.textContent = 'Not quite. Try to remember the definition!';
+                feedback.className = 'feedback incorrect';
+            }
+            
+            feedback.style.display = 'block';
+            updateButtons();
+        }
+
+        // Navigation functions
+        function nextCard() {
+            if (currentIndex < vocabWords.length - 1) {
+                document.getElementById(`card-${currentIndex}`).classList.remove('active');
+                currentIndex++;
+                document.getElementById(`card-${currentIndex}`).classList.add('active');
+                document.getElementById('current').textContent = currentIndex + 1;
+                updateButtons();
+            }
+        }
+
+        function prevCard() {
+            if (currentIndex > 0) {
+                document.getElementById(`card-${currentIndex}`).classList.remove('active');
+                currentIndex--;
+                document.getElementById(`card-${currentIndex}`).classList.add('active');
+                document.getElementById('current').textContent = currentIndex + 1;
+                updateButtons();
+            }
+        }
+
+        // Update button states
+        function updateButtons() {
+            document.getElementById('prev-btn').disabled = (currentIndex === 0);
+            document.getElementById('next-btn').disabled = (currentIndex === vocabWords.length - 1);
+        }
+
+        // Initialize on page load
+        window.onload = function() {
+            createCards();
+        };
+    </script>
+</body>
+</html>
